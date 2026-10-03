@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StayEase — Hotel Management System</title>
+<style>
+:root{
+  --primary:#2563eb;--primary-dark:#1d4ed8;--bg:#f5f7fb;--card:#fff;--text:#172033;
+  --muted:#6b7280;--border:#e5e7eb;--success:#16a34a;--warning:#d97706;--danger:#dc2626;
+  --shadow:0 8px 25px rgba(15,23,42,.07)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;background:#111827;color:#fff;padding:22px 16px;position:fixed;left:0;top:0;bottom:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;padding:8px 10px 28px}
+.logo span{background:#2563eb;border-radius:10px;padding:8px}
+.nav button{width:100%;background:transparent;color:#cbd5e1;text-align:left;padding:12px 14px;border-radius:9px;margin:3px 0;font-size:15px}
+.nav button:hover,.nav button.active{background:#1e40af;color:#fff}
+.main{margin-left:250px;width:calc(100% - 250px);padding:28px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.topbar h1{font-size:28px}.topbar p{color:var(--muted);margin-top:4px}
+.profile{display:flex;align-items:center;gap:10px;background:#fff;padding:8px 13px;border-radius:30px;box-shadow:var(--shadow)}
+.avatar{width:36px;height:36px;border-radius:50%;background:#dbeafe;color:#1d4ed8;display:grid;place-items:center;font-weight:700}
+.page{display:none}.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+.stat{display:flex;justify-content:space-between;align-items:flex-start}
+.stat h3{font-size:28px;margin-top:8px}.stat p{color:var(--muted);font-size:14px}.icon{font-size:25px;background:#eff6ff;padding:10px;border-radius:10px}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-head h2{font-size:18px}.btn{padding:10px 15px;border-radius:8px;font-weight:600}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}
+.btn-light{background:#f3f4f6;color:#374151}.btn-danger{background:#fee2e2;color:#b91c1c}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--border);font-size:14px}th{color:var(--muted);font-weight:600}
+.badge{padding:5px 9px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block}.available{background:#dcfce7;color:#15803d}.occupied{background:#fee2e2;color:#b91c1c}.cleaning{background:#fef3c7;color:#b45309}.reserved{background:#dbeafe;color:#1d4ed8}
+.toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}.toolbar input,.toolbar select,.form input,.form select{border:1px solid var(--border);padding:10px 12px;border-radius:8px;background:#fff;outline:none}.toolbar input:focus,.form input:focus,.form select:focus{border-color:var(--primary)}
+.toolbar input{min-width:230px}
+.room-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.room-card h3{margin-bottom:7px}.room-card .room-no{color:var(--primary);font-weight:700;font-size:13px}.room-card .price{font-size:21px;font-weight:800;margin:14px 0 3px}.room-actions{display:flex;gap:8px;margin-top:15px}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}.form-group{display:flex;flex-direction:column;gap:7px}.form-group.full{grid-column:1/-1}.form label{font-size:13px;font-weight:600}.form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:30}.modal.show{display:flex}.modal-box{background:#fff;width:min(650px,100%);border-radius:15px;padding:24px;max-height:90vh;overflow:auto}.modal-head{display:flex;justify-content:space-between;margin-bottom:20px}.close{background:#f3f4f6;width:34px;height:34px;border-radius:50%}
+.chart{height:230px;display:flex;align-items:flex-end;gap:14px;padding:15px 5px 0}.bar-wrap{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}.bar{width:100%;max-width:38px;background:#2563eb;border-radius:6px 6px 0 0}.bar-label{font-size:11px;color:var(--muted)}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.quick button{padding:16px;border:1px dashed #cbd5e1;background:#f8fafc;border-radius:10px;text-align:left}.quick strong{display:block;margin-bottom:5px}.quick span{color:var(--muted);font-size:13px}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.toast{position:fixed;right:24px;bottom:24px;background:#111827;color:#fff;padding:13px 18px;border-radius:9px;display:none;z-index:50}.toast.show{display:block}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.room-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.sidebar{width:70px;padding:18px 8px}.logo strong,.nav button span{display:none}.logo{justify-content:center}.nav button{text-align:center}.main{margin-left:70px;width:calc(100% - 70px);padding:18px}.stats,.room-grid,.quick{grid-template-columns:1fr}.topbar{align-items:flex-start}.profile{display:none}.form{grid-template-columns:1fr}.form-group.full{grid-column:auto}.form-actions{grid-column:auto}table{min-width:650px}.card.table-card{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo"><span>🏨</span><strong>StayEase</strong></div>
+  <div class="nav">
+    <button class="active" data-page="dashboard">📊 <span>Dashboard</span></button>
+    <button data-page="rooms">🛏️ <span>Rooms</span></button>
+    <button data-page="guests">👥 <span>Guests</span></button>
+    <button data-page="bookings">📅 <span>Bookings</span></button>
+    <button data-page="billing">💳 <span>Billing</span></button>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div><h1 id="pageTitle">Dashboard</h1><p id="pageSub">Overview of your hotel today</p></div>
+    <div class="profile"><div class="avatar">A</div><div><b>Admin</b><small style="display:block;color:#6b7280">Manager</small></div></div>
+  </header>
+
+  <section id="dashboard" class="page active">
+    <div class="stats">
+      <div class="card stat"><div><p>Total Rooms</p><h3 id="totalRooms">0</h3></div><div class="icon">🛏️</div></div>
+      <div class="card stat"><div><p>Occupied</p><h3 id="occupiedRooms">0</h3></div><div class="icon">🔑</div></div>
+      <div class="card stat"><div><p>Available</p><h3 id="availableRooms">0</h3></div><div class="icon">✅</div></div>
+      <div class="card stat"><div><p>Today's Revenue</p><h3 id="todayRevenue">₹0</h3></div><div class="icon">💰</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="section-head"><h2>Weekly Revenue</h2></div><div class="chart" id="revenueChart"></div></div>
+      <div class="card"><div class="section-head"><h2>Quick Actions</h2></div><div class="quick">
+        <button onclick="openGuestModal()"><strong>➕ Add Guest</strong><span>Register a new guest</span></button>
+        <button onclick="openBookingModal()"><strong>📅 New Booking</strong><span>Create reservation</span></button>
+        <button onclick="openRoomModal()"><strong>🛏️ Add Room</strong><span>Add hotel room</span></button>
+      </div></div>
+    </div>
+    <div class="card table-card" style="margin-top:20px"><div class="section-head"><h2>Recent Bookings</h2><button class="btn btn-light" onclick="showPage('bookings')">View All</button></div><div id="recentBookings"></div></div>
+  </section>
+
+  <section id="rooms" class="page">
+    <div class="card">
+      <div class="section-head"><h2>Room Management</h2><button class="btn btn-primary" onclick="openRoomModal()">+ Add Room</button></div>
+      <div class="toolbar"><input id="roomSearch" placeholder="Search room or type..." oninput="renderRooms()"><select id="roomFilter" onchange="renderRooms()"><option value="">All Status</option><option>Available</option><option>Occupied</option><option>Cleaning</option><option>Reserved</option></select></div>
+      <div class="room-grid" id="roomGrid"></div>
+    </div>
+  </section>
+
+  <section id="guests" class="page">
+    <div class="card table-card">
+      <div class="section-head"><h2>Guest Management</h2><button class="btn btn-primary" onclick="openGuestModal()">+ Add Guest</button></div>
+      <div class="toolbar"><input id="guestSearch" placeholder="Search guest..." oninput="renderGuests()"></div>
+      <div id="guestTable"></div>
+    </div>
+  </section>
+
+  <section id="bookings" class="page">
+    <div class="card table-card">
+      <div class="section-head"><h2>Reservations</h2><button class="btn btn-primary" onclick="openBookingModal()">+ New Booking</button></div>
+      <div class="toolbar"><input id="bookingSearch" placeholder="Search booking or guest..." oninput="renderBookings()"></div>
+      <div id="bookingTable"></div>
+    </div>
+  </section>
+
+  <section id="billing" class="page">
+    <div class="card table-card">
+      <div class="section-head"><h2>Billing & Payments</h2></div>
+      <div id="billingTable"></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="modal" id="roomModal"><div class="modal-box"><div class="modal-head"><h2 id="roomModalTitle">Add Room</h2><button class="close" onclick="closeModal('roomModal')">✕</button></div>
+<form class="form" id="roomForm">
+<input type="hidden" id="roomId">
+<div class="form-group"><label>Room Number</label><input id="roomNumber" required></div>
+<div class="form-group"><label>Room Type</label><select id="roomType"><option>Standard</option><option>Deluxe</option><option>Suite</option><option>Family</option></select></div>
+<div class="form-group"><label>Price / Night (₹)</label><input id="roomPrice" type="number" min="0" required></div>
+<div class="form-group"><label>Status</label><select id="roomStatus"><option>Available</option><option>Occupied</option><option>Cleaning</option><option>Reserved</option></select></div>
+<div class="form-actions"><button type="button" class="btn btn-light" onclick="closeModal('roomModal')">Cancel</button><button class="btn btn-primary">Save Room</button></div>
+</form></div></div>
+
+<div class="modal" id="guestModal"><div class="modal-box"><div class="modal-head"><h2 id="guestModalTitle">Add Guest</h2><button class="close" onclick="closeModal('guestModal')">✕</button></div>
+<form class="form" id="guestForm">
+<input type="hidden" id="guestId">
+<div class="form-group"><label>Full Name</label><input id="guestName" required></div><div class="form-group"><label>Phone</label><input id="guestPhone" required></div>
+<div class="form-group"><label>Email</label><input id="guestEmail" type="email"></div><div class="form-group"><label>City / Country</label><input id="guestLocation"></div>
+<div class="form-actions"><button type="button" class="btn btn-light" onclick="closeModal('guestModal')">Cancel</button><button class="btn btn-primary">Save Guest</button></div>
+</form></div></div>
+
+<div class="modal" id="bookingModal"><div class="modal-box"><div class="modal-head"><h2>New Booking</h2><button class="close" onclick="closeModal('bookingModal')">✕</button></div>
+<form class="form" id="bookingForm">
+<div class="form-group"><label>Guest</label><select id="bookingGuest" required></select></div><div class="form-group"><label>Room</label><select id="bookingRoom" required></select></div>
+<div class="form-group"><label>Check-in</label><input id="checkIn" type="date" required></div><div class="form-group"><label>Check-out</label><input id="checkOut" type="date" required></div>
+<div class="form-group"><label>Payment Status</label><select id="paymentStatus"><option>Pending</option><option>Paid</option><option>Partial</option></select></div>
+<div class="form-actions"><button type="button" class="btn btn-light" onclick="closeModal('bookingModal')">Cancel</button><button class="btn btn-primary">Create Booking</button></div>
+</form></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const defaultRooms=[
+{id:1,number:"101",type:"Standard",price:2500,status:"Available"},
+{id:2,number:"102",type:"Deluxe",price:3800,status:"Occupied"},
+{id:3,number:"103",type:"Suite",price:6500,status:"Available"},
+{id:4,number:"104",type:"Standard",price:2500,status:"Cleaning"},
+{id:5,number:"201",type:"Deluxe",price:3800,status:"Reserved"},
+{id:6,number:"202",type:"Family",price:5000,status:"Available"}
+];
+const defaultGuests=[
+{id:1,name:"Rahul Sharma",phone:"+91 98765 43210",email:"rahul@example.com",location:"Mumbai"},
+{id:2,name:"Priya Patel",phone:"+91 99887 66554",email:"priya@example.com",location:"Pune"},
+{id:3,name:"John Smith",phone:"+1 555 123 4567",email:"john@example.com",location:"New York"}
+];
+let rooms=JSON.parse(localStorage.getItem("hotelRooms")||"null")||defaultRooms;
+let guests=JSON.parse(localStorage.getItem("hotelGuests")||"null")||defaultGuests;
+let bookings=JSON.parse(localStorage.getItem("hotelBookings")||"null")||[
+{id:1001,guestId:1,roomId:2,checkIn:"2026-10-02",checkOut:"2026-10-05",payment:"Paid"},
+{id:1002,guestId:2,roomId:5,checkIn:"2026-10-04",checkOut:"2026-10-07",payment:"Pending"}
+];
+function save(){localStorage.setItem("hotelRooms",JSON.stringify(rooms));localStorage.setItem("hotelGuests",JSON.stringify(guests));localStorage.setItem("hotelBookings",JSON.stringify(bookings))}
+function money(n){return "₹"+Number(n).toLocaleString("en-IN")}
+function toast(msg){let t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ const names={dashboard:["Dashboard","Overview of your hotel today"],rooms:["Rooms","Manage room availability and pricing"],guests:["Guests","Manage your hotel guests"],bookings:["Bookings","Manage reservations and stays"],billing:["Billing","Track invoices and payment status"]};
+ document.getElementById("pageTitle").textContent=names[id][0];document.getElementById("pageSub").textContent=names[id][1];
+ if(id==="rooms")renderRooms();if(id==="guests")renderGuests();if(id==="bookings")renderBookings();if(id==="billing")renderBilling();if(id==="dashboard")renderDashboard();
+}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function renderDashboard(){
+ document.getElementById("totalRooms").textContent=rooms.length;
+ document.getElementById("occupiedRooms").textContent=rooms.filter(r=>r.status==="Occupied").length;
+ document.getElementById("availableRooms").textContent=rooms.filter(r=>r.status==="Available").length;
+ const rev=bookings.filter(b=>b.payment==="Paid").reduce((s,b)=>s+((rooms.find(r=>r.id==b.roomId)||{}).price||0),0);
+ document.getElementById("todayRevenue").textContent=money(rev);
+ const vals=[32000,46000,39000,58000,51000,72000,rev||64000], days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], max=Math.max(...vals);
+ document.getElementById("revenueChart").innerHTML=vals.map((v,i)=>`<div class="bar-wrap"><b style="font-size:11px">${money(v/1000)}k</b><div class="bar" style="height:${Math.max(8,v/max*160)}px"></div><span class="bar-label">${days[i]}</span></div>`).join("");
+ const recent=bookings.slice(-5).reverse();
+ document.getElementById("recentBookings").innerHTML=recent.length?`<table><thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Stay</th><th>Payment</th></tr></thead><tbody>${recent.map(b=>bookingRow(b)).join("")}</tbody></table>`:`<div class="empty">No bookings yet.</div>`;
+}
+function bookingRow(b){let g=guests.find(x=>x.id==b.guestId),r=rooms.find(x=>x.id==b.roomId);return `<tr><td>#${b.id}</td><td>${g?.name||"Unknown"}</td><td>${r?.number||"-"}</td><td>${b.checkIn} → ${b.checkOut}</td><td><span class="badge ${b.payment==="Paid"?"available":b.payment==="Pending"?"cleaning":"reserved"}">${b.payment}</span></td></tr>`}
+function renderRooms(){
+ let q=(document.getElementById("roomSearch")?.value||"").toLowerCase(), f=document.getElementById("roomFilter")?.value||"";
+ let arr=rooms.filter(r=>(!q||(r.number+r.type).toLowerCase().includes(q))&&(!f||r.status===f));
+ document.getElementById("roomGrid").innerHTML=arr.length?arr.map(r=>`<div class="card room-card"><div class="room-no">ROOM ${r.number}</div><h3>${r.type}</h3><span class="badge ${r.status.toLowerCase()}">${r.status}</span><div class="price">${money(r.price)}</div><small style="color:#6b7280">per night</small><div class="room-actions"><button class="btn btn-light" onclick="editRoom(${r.id})">Edit</button><button class="btn btn-danger" onclick="deleteRoom(${r.id})">Delete</button></div></div>`).join(""):`<div class="empty" style="grid-column:1/-1">No rooms found.</div>`;
+}
+function renderGuests(){
+ let q=(document.getElementById("guestSearch")?.value||"").toLowerCase(),arr=guests.filter(g=>(g.name+g.phone+g.email).toLowerCase().includes(q));
+ document.getElementById("guestTable").innerHTML=arr.length?`<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Location</th><th>Actions</th></tr></thead><tbody>${arr.map(g=>`<tr><td><b>${g.name}</b></td><td>${g.phone}</td><td>${g.email||"-"}</td><td>${g.location||"-"}</td><td><button class="btn btn-light" onclick="editGuest(${g.id})">Edit</button> <button class="btn btn-danger" onclick="deleteGuest(${g.id})">Delete</button></td></tr>`).join("")}</tbody></table>`:`<div class="empty">No guests found.</div>`;
+}
+function renderBookings(){
+ let q=(document.getElementById("bookingSearch")?.value||"").toLowerCase(),arr=bookings.filter(b=>{let g=guests.find(x=>x.id==b.guestId);return (`${b.id} ${g?.name||""} ${b.checkIn} ${b.checkOut}`).toLowerCase().includes(q)});
+ document.getElementById("bookingTable").innerHTML=arr.length?`<table><thead><tr><th>Booking</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Payment</th><th>Action</th></tr></thead><tbody>${arr.map(b=>{let g=guests.find(x=>x.id==b.guestId),r=rooms.find(x=>x.id==b.roomId);return `<tr><td>#${b.id}</td><td>${g?.name||"-"}</td><td>${r?.number||"-"}</td><td>${b.checkIn}</td><td>${b.checkOut}</td><td><span class="badge ${b.payment==="Paid"?"available":b.payment==="Pending"?"cleaning":"reserved"}">${b.payment}</span></td><td><button class="btn btn-danger" onclick="deleteBooking(${b.id})">Delete</button></td></tr>`}).join("")}</tbody></table>`:`<div class="empty">No bookings found.</div>`;
+}
+function renderBilling(){
+ document.getElementById("billingTable").innerHTML=bookings.length?`<table><thead><tr><th>Invoice</th><th>Guest</th><th>Room</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>${bookings.map(b=>{let g=guests.find(x=>x.id==b.guestId),r=rooms.find(x=>x.id==b.roomId),n=Math.max(1,(new Date(b.checkOut)-new Date(b.checkIn))/86400000),amt=(r?.price||0)*n;return `<tr><td>INV-${b.id}</td><td>${g?.name||"-"}</td><td>${r?.number||"-"}</td><td><b>${money(amt)}</b></td><td><span class="badge ${b.payment==="Paid"?"available":"cleaning"}">${b.payment}</span></td><td>${b.payment!=="Paid"?`<button class="btn btn-primary" onclick="markPaid(${b.id})">Mark Paid</button>`:"✓ Paid"}</td></tr>`}).join("")}</tbody></table>`:`<div class="empty">No invoices yet.</div>`;
+}
+function openModal(id){document.getElementById(id).classList.add("show")}function closeModal(id){document.getElementById(id).classList.remove("show")}
+function openRoomModal(id=null){
+ document.getElementById("roomForm").reset();document.getElementById("roomId").value=id||"";
+ if(id){let r=rooms.find(x=>x.id==id);document.getElementById("roomModalTitle").textContent="Edit Room";document.getElementById("roomNumber").value=r.number;document.getElementById("roomType").value=r.type;document.getElementById("roomPrice").value=r.price;document.getElementById("roomStatus").value=r.status}else document.getElementById("roomModalTitle").textContent="Add Room";
+ openModal("roomModal")
+}
+function editRoom(id){openRoomModal(id)}function deleteRoom(id){if(confirm("Delete this room?")){rooms=rooms.filter(r=>r.id!==id);save();renderRooms();renderDashboard();toast("Room deleted")}}
+document.getElementById("roomForm").onsubmit=e=>{e.preventDefault();let id=Number(document.getElementById("roomId").value);let obj={number:document.getElementById("roomNumber").value,type:document.getElementById("roomType").value,price:Number(document.getElementById("roomPrice").value),status:document.getElementById("roomStatus").value};if(id)rooms=rooms.map(r=>r.id===id?{...r,...obj}:r);else rooms.push({id:Date.now(),...obj});save();closeModal("roomModal");renderRooms();renderDashboard();toast(id?"Room updated":"Room added")};
+function openGuestModal(id=null){document.getElementById("guestForm").reset();document.getElementById("guestId").value=id||"";if(id){let g=guests.find(x=>x.id==id);document.getElementById("guestModalTitle").textContent="Edit Guest";guestName.value=g.name;guestPhone.value=g.phone;guestEmail.value=g.email;guestLocation.value=g.location}else document.getElementById("guestModalTitle").textContent="Add Guest";openModal("guestModal")}
+function editGuest(id){openGuestModal(id)}function deleteGuest(id){if(bookings.some(b=>b.guestId===id)){alert("This guest has bookings and cannot be deleted.");return}if(confirm("Delete this guest?")){guests=guests.filter(g=>g.id!==id);save();renderGuests();toast("Guest deleted")}}
+document.getElementById("guestForm").onsubmit=e=>{e.preventDefault();let id=Number(guestId.value),obj={name:guestName.value,phone:guestPhone.value,email:guestEmail.value,location:guestLocation.value};if(id)guests=guests.map(g=>g.id===id?{...g,...obj}:g);else guests.push({id:Date.now(),...obj});save();closeModal("guestModal");renderGuests();renderDashboard();toast(id?"Guest updated":"Guest added")};
+function openBookingModal(){if(!guests.length){alert("Please add a guest first.");return}let available=rooms.filter(r=>r.status==="Available");if(!available.length){alert("No available rooms.");return}bookingGuest.innerHTML=guests.map(g=>`<option value="${g.id}">${g.name}</option>`).join("");bookingRoom.innerHTML=available.map(r=>`<option value="${r.id}">Room ${r.number} — ${r.type} (${money(r.price)})</option>`).join("");let today=new Date().toISOString().slice(0,10);checkIn.value=today;let d=new Date();d.setDate(d.getDate()+1);checkOut.value=d.toISOString().slice(0,10);openModal("bookingModal")}
+document.getElementById("bookingForm").onsubmit=e=>{e.preventDefault();let ci=checkIn.value,co=checkOut.value;if(new Date(co)<=new Date(ci)){alert("Check-out must be after check-in.");return}let rid=Number(bookingRoom.value);bookings.push({id:Math.floor(1000+Math.random()*9000),guestId:Number(bookingGuest.value),roomId:rid,checkIn:ci,checkOut:co,payment:paymentStatus.value});let r=rooms.find(x=>x.id===rid);if(r)r.status="Occupied";save();closeModal("bookingModal");renderBookings();renderRooms();renderDashboard();toast("Booking created successfully")};
+function deleteBooking(id){if(confirm("Delete this booking?")){let b=bookings.find(x=>x.id===id);let r=rooms.find(x=>x.id===b?.roomId);if(r)r.status="Available";bookings=bookings.filter(x=>x.id!==id);save();renderBookings();renderBilling();renderRooms();renderDashboard();toast("Booking deleted")}}
+function markPaid(id){let b=bookings.find(x=>x.id===id);if(b)b.payment="Paid";save();renderBilling();renderBookings();renderDashboard();toast("Payment marked as paid")}
+window.onclick=e=>{if(e.target.classList.contains("modal"))e.target.classList.remove("show")}
+renderDashboard();
+</script>
+</body>
+</html>
